@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="checkout.payment.methods"
+               template="Mondu_MonduPaymentHyva::checkout/payment/method-list.phtml">
+            <arguments>
+                <argument name="magewire" xsi:type="object">
+                    \Hyva\Checkout\Magewire\Checkout\Payment\MethodList
+                </argument>
+                <argument name="payment_content_view_model" xsi:type="object">
+                    \Mondu\MonduPaymentHyva\ViewModel\PaymentContent
+                </argument>
+            </arguments>
+        </referenceBlock>
+    </body>
+</page>
+

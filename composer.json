@@ -1,0 +1,23 @@
+{
+    "name": "mondu_gmbh/magento2-hyva-checkout-mondu-payment",
+    "description": "Hyvä Themes Compatibility module for Mondu_Mondu",
+    "type": "magento2-module",
+    "version": "1.0.0",
+    "license": [
+        "MIT"
+    ],
+    "require": {
+        "php": ">=8.1",
+        "mondu_gmbh/magento2-payment": ">=2.4.1",
+        "hyva-themes/magento2-hyva-checkout": "^1.0",
+        "ext-json": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Mondu\\MonduPaymentHyva\\": ""
+        },
+        "files": [
+            "registration.php"
+        ]
+    }
+}
