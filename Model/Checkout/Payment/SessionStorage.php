@@ -8,7 +8,7 @@ use Magento\Checkout\Model\Session as CheckoutSession;
 
 class SessionStorage
 {
-    private const string RESPONSE_KEY = 'mondu_response';
+    private const RESPONSE_KEY = 'mondu_response';
 
     public function __construct(private readonly CheckoutSession $checkoutSession)
     {

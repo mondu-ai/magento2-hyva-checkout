@@ -5,7 +5,7 @@ This module provides Hyvä Checkout compatibility for the official Mondu payment
 ## Requirements
 
 - Magento CE 2.4.7 or higher
-- PHP 8.3 or 8.4
+- PHP 8.2 - 8.4
 - [Hyvä Checkout](https://docs.hyva.io/checkout/index.html) (license required)
 - [Mondu Magento 2 Payment Module](https://github.com/mondu-ai/magento2-checkout)
 

@@ -7,7 +7,7 @@
         "MIT"
     ],
     "require": {
-        "php": ">=8.3",
+        "php": ">=8.2",
         "mondu/magento2-payment": ">=2.4.1",
         "hyva-themes/magento2-hyva-checkout": "^1.3"
     },
