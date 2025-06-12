@@ -3,46 +3,30 @@
 declare(strict_types=1);
 
 /** @var Hyva\Theme\ViewModel\HyvaCsp $hyvaCsp */
-/** @var Mondu\Mondu\Model\Ui\ConfigProvider $cfg */
-/** @var \Magento\Framework\Escaper $escaper */
 /** @var \Mondu\MonduPaymentHyva\Magewire\Checkout\Payment\Mondu $magewire */
 ?>
 <script type="module">
-    "use strict";
+    let monduSdk;
 
-    let monduSdkPromise = null;
-
-    function loadMonduSdk() {
-        if (monduSdkPromise) {
-            return monduSdkPromise;
-        }
-
-        monduSdkPromise = new Promise((resolve, reject) => {
-            if (document.getElementById('mondu_sdk_min')) {
-                return resolve();
-            }
-
-            const script = document.createElement('script');
-            script.id = 'mondu_sdk_min';
-            script.src = <?= json_encode($magewire->sdkUrl) ?>;
-            script.async = true;
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error('Mondu SDK failed to load'));
-            document.head.appendChild(script);
-        });
-
-        return monduSdkPromise;
-    }
-
-    let activeMethod = null;
-
-    window.addEventListener('checkout:payment:method-activate', ({detail}) => {
-        if (!detail.method?.startsWith('mondu')) {
+    window.addEventListener('checkout:payment:method-activate', ({ detail }) => {
+        if (!detail.method?.startsWith('mondu') || monduSdk) return;
+        if (document.getElementById('mondu_sdk_min')) {
+            monduSdk = Promise.resolve();
             return;
         }
 
-        activeMethod = detail.method;
-        loadMonduSdk().catch(console.error);
-    }, {once: true});
+        monduSdk = new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.id = 'mondu_sdk_min';
+            s.src = <?= json_encode($magewire->sdkUrl) ?>;
+            s.async = true;
+            s.onload = resolve;
+            s.onerror = () => reject(new Error('Mondu SDK failed to load'));
+            document.head.appendChild(s);
+        });
+
+        monduSdk.catch(console.error);
+    }, { once: true });
+
 </script>
 <?php $hyvaCsp->registerInlineScript(); ?>

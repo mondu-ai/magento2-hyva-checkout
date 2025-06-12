@@ -17,7 +17,7 @@ composer require mondu/magento2-hyva-payment
 
 > This module depends on **Hyvä Checkout**, which in turn requires **Hyvä Theme**.
 > During installation, you will be prompted to authenticate with Hyvä’s private GitLab repository.
-> 
+>
 > Refer to the official documentation for setup instructions:
 > - [Hyvä Theme Installation Guide](https://docs.hyva.io/hyva-themes/getting-started/index.html#for-licensees)
 > - [Hyvä Checkout Installation Guide](https://docs.hyva.io/checkout/hyva-checkout/getting-started/index.html#installation)
