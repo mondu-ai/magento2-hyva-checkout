@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mondu\MonduPaymentHyva\Model\Checkout\Payment;
 
 use Mondu\Mondu\Helpers\ABTesting\ABTesting;
+use Mondu\Mondu\Helpers\OrderHelper;
 use Mondu\Mondu\Model\Request\Factory as RequestFactory;
 
 class TransactionProcessor
@@ -31,7 +32,7 @@ class TransactionProcessor
 
     private function handleDeclinedOrder(array $order, array &$response): void
     {
-        if (($order['state'] ?? '') === 'declined') {
+        if (($order['state'] ?? '') === OrderHelper::DECLINED) {
             $response['error'] = 1;
             $response['message'] = __('Order has been declined');
         }

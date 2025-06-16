@@ -15,6 +15,7 @@ use Magento\Quote\Model\Quote\Address;
 use Mondu\Mondu\Helpers\BuyerParams\BuyerParamsInterface;
 use Mondu\Mondu\Helpers\Logger\Logger as MonduFileLogger;
 use Mondu\Mondu\Helpers\OrderHelper;
+use Mondu\Mondu\Helpers\PaymentMethod;
 use Mondu\Mondu\Model\Request\Transactions as OriginalTransactions;
 use Mondu\Mondu\Model\Ui\ConfigProvider;
 
@@ -55,7 +56,10 @@ class Transactions extends OriginalTransactions
             }
             $params = $this->getRequestParams();
 
-            if (in_array( $_params['payment_method'], array('direct_debit', 'installment', 'installment_by_invoice'))) {
+            if (in_array(
+                $_params['payment_method'],
+                [PaymentMethod::DIRECT_DEBIT, PaymentMethod::INSTALLMENT, PaymentMethod::INSTALLMENT_BY_INVOICE])
+            ) {
                 $params['payment_method'] = $_params['payment_method'];
             }
 
