@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Hyva\Checkout\Model\Magewire\Payment\PlaceOrderServiceProvider">
+        <arguments>
+            <argument name="placeOrderServiceList" xsi:type="array">
+                <item name="mondu" xsi:type="object">
+                    Mondu\MonduPaymentHyva\Model\Checkout\Payment\MonduPlaceOrderService
+                </item>
+                <item name="mondusepa" xsi:type="object">
+                    Mondu\MonduPaymentHyva\Model\Checkout\Payment\MonduPlaceOrderService
+                </item>
+                <item name="monduinstallment" xsi:type="object">
+                    Mondu\MonduPaymentHyva\Model\Checkout\Payment\MonduPlaceOrderService
+                </item>
+                <item name="monduinstallmentbyinvoice" xsi:type="object">
+                    Mondu\MonduPaymentHyva\Model\Checkout\Payment\MonduPlaceOrderService
+                </item>
+            </argument>
+        </arguments>
+    </type>
+</config>
