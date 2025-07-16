@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
-/** @var Hyva\Theme\ViewModel\HyvaCsp $hyvaCsp */
-/** @var \Mondu\MonduPaymentHyva\Magewire\Checkout\Payment\Mondu $magewire */
+/**
+ * @var \Hyva\Theme\ViewModel\HyvaCsp $hyvaCsp
+ * @var \Magento\Framework\Escaper $escaper
+ * @var \Mondu\MonduPaymentHyva\Magewire\Checkout\Payment\Mondu $magewire
+ */
 ?>
 <script type="module">
     let monduSdk;
@@ -18,7 +21,7 @@ declare(strict_types=1);
         monduSdk = new Promise((resolve, reject) => {
             const s = document.createElement('script');
             s.id = 'mondu_sdk_min';
-            s.src = <?= json_encode($magewire->sdkUrl) ?>;
+            s.src = <?= /* @noEscape */ json_encode($escaper->escapeUrl($magewire->sdkUrl)) ?>;
             s.async = true;
             s.onload = resolve;
             s.onerror = () => reject(new Error('Mondu SDK failed to load'));

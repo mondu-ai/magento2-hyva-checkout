@@ -1,15 +1,13 @@
 <?xml version="1.0"?>
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      layout="1column"
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <referenceContainer name="hyva.checkout.api-v1.after">
             <block name="payment.mondu.generic"
                    template="Mondu_MonduPaymentHyva::magewire/checkout/payment/mondu.phtml">
                 <arguments>
-                    <argument name="magewire" xsi:type="object">
-                        Mondu\MonduPaymentHyva\Magewire\Checkout\Payment\Mondu
-                    </argument>
+                    <argument name="magewire"
+                              xsi:type="object">Mondu\MonduPaymentHyva\Magewire\Checkout\Payment\Mondu</argument>
                 </arguments>
             </block>
         </referenceContainer>
