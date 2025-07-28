@@ -4,18 +4,14 @@
     <type name="Hyva\Checkout\Model\Magewire\Payment\PlaceOrderServiceProvider">
         <arguments>
             <argument name="placeOrderServiceList" xsi:type="array">
-                <item name="mondu" xsi:type="object">
-                    Mondu\MonduPaymentHyva\Model\Checkout\Payment\MonduPlaceOrderService
-                </item>
-                <item name="mondusepa" xsi:type="object">
-                    Mondu\MonduPaymentHyva\Model\Checkout\Payment\MonduPlaceOrderService
-                </item>
-                <item name="monduinstallment" xsi:type="object">
-                    Mondu\MonduPaymentHyva\Model\Checkout\Payment\MonduPlaceOrderService
-                </item>
-                <item name="monduinstallmentbyinvoice" xsi:type="object">
-                    Mondu\MonduPaymentHyva\Model\Checkout\Payment\MonduPlaceOrderService
-                </item>
+                <item name="mondu"
+                      xsi:type="object">Mondu\MonduPaymentHyva\Model\Checkout\Payment\MonduPlaceOrderService</item>
+                <item name="mondusepa"
+                      xsi:type="object">Mondu\MonduPaymentHyva\Model\Checkout\Payment\MonduPlaceOrderService</item>
+                <item name="monduinstallment"
+                      xsi:type="object">Mondu\MonduPaymentHyva\Model\Checkout\Payment\MonduPlaceOrderService</item>
+                <item name="monduinstallmentbyinvoice"
+                      xsi:type="object">Mondu\MonduPaymentHyva\Model\Checkout\Payment\MonduPlaceOrderService</item>
             </argument>
         </arguments>
     </type>

@@ -9,8 +9,14 @@ use Mondu\Mondu\Model\Ui\ConfigProvider;
 
 class Mondu extends Component
 {
+    /**
+     * @var string
+     */
     public string $sdkUrl;
 
+    /**
+     * @param ConfigProvider $configProvider
+     */
     public function __construct(private readonly ConfigProvider $configProvider)
     {
         $this->sdkUrl = $this->configProvider->getSdkUrl();

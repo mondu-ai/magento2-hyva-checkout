@@ -14,23 +14,38 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Api\CartManagementInterface;
 use Magento\Quote\Model\Quote;
 use Magewirephp\Magewire\Component;
+use Mondu\Mondu\Service\TransactionService;
 
 class MonduPlaceOrderService extends AbstractPlaceOrderService implements PlaceOrderServiceInterface
 {
+    /**
+     * @param CustomerDataProvider $customerDataProvider
+     * @param SessionStorage $sessionStorage
+     * @param TransactionService $transactionService
+     * @param CartManagementInterface $cartManagement
+     * @param DefaultOrderData|null $orderData
+     */
     public function __construct(
         private readonly CustomerDataProvider $customerDataProvider,
         private readonly SessionStorage $sessionStorage,
-        private readonly TransactionProcessor $transactionProcessor,
+        private readonly TransactionService $transactionService,
         CartManagementInterface $cartManagement,
-        ?DefaultOrderData $orderData = null
+        ?DefaultOrderData $orderData = null,
     ) {
         parent::__construct($cartManagement, $orderData);
     }
 
+    /**
+     * Creates Mondu transaction for the given quote and stores the response.
+     *
+     * @param Quote $quote
+     * @throws LocalizedException
+     * @return int
+     */
     public function placeOrder(Quote $quote): int
     {
         try {
-            $response = $this->transactionProcessor->process([
+            $response = $this->transactionService->createTransaction([
                 'email' => $this->customerDataProvider->getEmail($quote),
                 'user-agent' => $this->customerDataProvider->getUserAgent(),
                 'payment_method' => $this->customerDataProvider->getPaymentMethod($quote),
@@ -44,13 +59,22 @@ class MonduPlaceOrderService extends AbstractPlaceOrderService implements PlaceO
             $this->sessionStorage->saveResponse($response);
 
             return 0;
-        } catch (\Throwable $e) {
+        } catch (Exception $e) {
             throw new LocalizedException(__('Failed to initiate Mondu order: %1', $e->getMessage()));
         }
     }
 
-    public function evaluateCompletion(EvaluationResultFactory $resultFactory, ?int $orderId = null): EvaluationResultInterface
-    {
+    /**
+     * Evaluates Mondu response and returns redirect or widget instructions.
+     *
+     * @param EvaluationResultFactory $resultFactory
+     * @param int|null $orderId
+     * @return EvaluationResultInterface
+     */
+    public function evaluateCompletion(
+        EvaluationResultFactory $resultFactory,
+        ?int $orderId = null
+    ): EvaluationResultInterface {
         $response = $this->sessionStorage->getResponse();
         $this->sessionStorage->clearResponse();
 
@@ -69,11 +93,23 @@ class MonduPlaceOrderService extends AbstractPlaceOrderService implements PlaceO
         );
     }
 
+    /**
+     * @return bool
+     */
     public function canRedirect(): bool
     {
         return true;
     }
 
+    /**
+     * Handles exception during order placement and updates Hyvä UI.
+     *
+     * @param Exception $exception
+     * @param Component $component
+     * @param Quote $quote
+     * @throws LocalizedException
+     * @return void
+     */
     public function handleException(Exception $exception, Component $component, Quote $quote): void
     {
         $component->getEvaluationResultBatch()->push(
