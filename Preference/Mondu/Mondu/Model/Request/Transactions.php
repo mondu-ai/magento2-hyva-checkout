@@ -9,13 +9,14 @@ use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Locale\Resolver;
 use Magento\Framework\UrlInterface;
+use Magento\Quote\Api\Data\CartInterface;
 use Magento\Quote\Model\Cart\CartTotalRepository;
-use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\Quote\Address;
 use Mondu\Mondu\Helpers\BuyerParams\BuyerParamsInterface;
 use Mondu\Mondu\Helpers\Logger\Logger as MonduFileLogger;
 use Mondu\Mondu\Helpers\OrderHelper;
 use Mondu\Mondu\Helpers\PaymentMethod;
+use Mondu\Mondu\Helpers\Request\UrlBuilder;
 use Mondu\Mondu\Model\Request\Transactions as OriginalTransactions;
 use Mondu\Mondu\Model\Ui\ConfigProvider;
 
@@ -25,26 +26,26 @@ class Transactions extends OriginalTransactions
 
     public function __construct(
         Curl $curl,
-        CartTotalRepository $cartTotalRepository,
-        CheckoutSession $checkoutSession,
-        ConfigProvider $configProvider,
+        private readonly CartTotalRepository $cartTotalRepository,
+        private readonly CheckoutSession $checkoutSession,
+        private readonly UrlBuilder $monduUrlBuilder,
+        private readonly MonduFileLogger $monduFileLogger,
         private readonly OrderHelper $orderHelper,
+        private readonly Resolver $store,
         private readonly UrlInterface $urlBuilder,
         private readonly BuyerParamsInterface $buyerParams,
-        private readonly Resolver $store,
-        private readonly MonduFileLogger $monduFileLogger,
         private readonly HyvaCheckoutConfig $checkoutConfig,
     ) {
         parent::__construct(
             $curl,
+            $buyerParams,
             $cartTotalRepository,
             $checkoutSession,
-            $configProvider,
+            $monduUrlBuilder,
+            $monduFileLogger,
             $orderHelper,
-            $urlBuilder,
-            $buyerParams,
             $store,
-            $monduFileLogger
+            $urlBuilder,
         );
     }
 
@@ -65,13 +66,15 @@ class Transactions extends OriginalTransactions
 
             $params = json_encode($params);
 
-            $url = $this->_configProvider->getApiUrl('orders');
-
             $this->curl->addHeader('X-Mondu-User-Agent', $_params['user-agent']);
 
-            $result = $this->sendRequestWithParams('post', $url, $params);
+            $result = $this->sendRequestWithParams(
+                'post',
+                $this->monduUrlBuilder->getOrdersUrl(),
+                $params,
+            );
             $data = json_decode($result, true);
-            $this->_checkoutSession->setMonduid($data['order']['uuid'] ?? null);
+            $this->checkoutSession->setMonduid($data['order']['uuid'] ?? null);
 
             if (!isset($data['order']['uuid'])) {
                 return [
@@ -99,12 +102,12 @@ class Transactions extends OriginalTransactions
         }
     }
 
-    protected function getRequestParams()
+    protected function getRequestParams(): array
     {
-        $quote = $this->_checkoutSession->getQuote();
+        $quote = $this->checkoutSession->getQuote();
         $quote->collectTotals();
 
-        $quoteTotals = $this->_cartTotalRepository->get($quote->getId());
+        $quoteTotals = $this->cartTotalRepository->get($quote->getId());
 
         $discountAmount = $quoteTotals->getDiscountAmount();
 
@@ -132,7 +135,7 @@ class Transactions extends OriginalTransactions
         return $this->orderHelper->addLinesOrGrossAmountToOrder($quote, $quoteTotals->getBaseGrandTotal(), $order);
     }
 
-    private function getBuyerParams(Quote $quote): array
+    private function getBuyerParams(CartInterface $quote): array
     {
         $params = [];
         if (($billing = $quote->getBillingAddress()) !== null) {
@@ -154,7 +157,7 @@ class Transactions extends OriginalTransactions
         return $params;
     }
 
-    private function getBillingAddressParams(Quote $quote): array
+    public function getBillingAddressParams(CartInterface $quote): array
     {
         return $this->extractAddressParams(
             $quote->getBillingAddress(),
@@ -162,7 +165,7 @@ class Transactions extends OriginalTransactions
         );
     }
 
-    private function getShippingAddressParams(Quote $quote): array
+    public function getShippingAddressParams(CartInterface $quote): array
     {
         return $this->extractAddressParams(
             $quote->getShippingAddress(),
@@ -170,7 +173,7 @@ class Transactions extends OriginalTransactions
         );
     }
 
-    private function extractAddressParams(?Address $address, array $attributeMapping): array
+    protected function extractAddressParamsWithMapping(?Address $address, array $attributeMapping): array
     {
         if (!$address || empty($attributeMapping)) {
             return [];
@@ -204,7 +207,7 @@ class Transactions extends OriginalTransactions
         return $params;
     }
 
-    private function resolveAddressValue(Address $address, string $key, array $street): mixed
+    protected function resolveAddressValue(Address $address, string $key, array $street): mixed
     {
         if (str_starts_with($key, 'street.')) {
             $index = (int) explode('.', $key)[1];
