@@ -26,9 +26,9 @@ class Transactions extends OriginalTransactions
 
     public function __construct(
         Curl $curl,
-        CartTotalRepository $cartTotalRepository,
-        CheckoutSession $checkoutSession,
-        UrlBuilder $monduUrlBuilder,
+        private readonly CartTotalRepository $cartTotalRepository,
+        private readonly CheckoutSession $checkoutSession,
+        private readonly UrlBuilder $monduUrlBuilder,
         private readonly MonduFileLogger $monduFileLogger,
         private readonly OrderHelper $orderHelper,
         private readonly Resolver $store,
@@ -38,6 +38,7 @@ class Transactions extends OriginalTransactions
     ) {
         parent::__construct(
             $curl,
+            $buyerParams,
             $cartTotalRepository,
             $checkoutSession,
             $monduUrlBuilder,
@@ -45,7 +46,6 @@ class Transactions extends OriginalTransactions
             $orderHelper,
             $store,
             $urlBuilder,
-            $buyerParams,
         );
     }
 
@@ -66,13 +66,15 @@ class Transactions extends OriginalTransactions
 
             $params = json_encode($params);
 
-            $url = $this->_configProvider->getApiUrl('orders');
-
             $this->curl->addHeader('X-Mondu-User-Agent', $_params['user-agent']);
 
-            $result = $this->sendRequestWithParams('post', $url, $params);
+            $result = $this->sendRequestWithParams(
+                'post',
+                $this->monduUrlBuilder->getOrdersUrl(),
+                $params,
+            );
             $data = json_decode($result, true);
-            $this->_checkoutSession->setMonduid($data['order']['uuid'] ?? null);
+            $this->checkoutSession->setMonduid($data['order']['uuid'] ?? null);
 
             if (!isset($data['order']['uuid'])) {
                 return [
@@ -102,10 +104,10 @@ class Transactions extends OriginalTransactions
 
     protected function getRequestParams(): array
     {
-        $quote = $this->_checkoutSession->getQuote();
+        $quote = $this->checkoutSession->getQuote();
         $quote->collectTotals();
 
-        $quoteTotals = $this->_cartTotalRepository->get($quote->getId());
+        $quoteTotals = $this->cartTotalRepository->get($quote->getId());
 
         $discountAmount = $quoteTotals->getDiscountAmount();
 
