@@ -9,13 +9,14 @@ use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Locale\Resolver;
 use Magento\Framework\UrlInterface;
+use Magento\Quote\Api\Data\CartInterface;
 use Magento\Quote\Model\Cart\CartTotalRepository;
-use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\Quote\Address;
 use Mondu\Mondu\Helpers\BuyerParams\BuyerParamsInterface;
 use Mondu\Mondu\Helpers\Logger\Logger as MonduFileLogger;
 use Mondu\Mondu\Helpers\OrderHelper;
 use Mondu\Mondu\Helpers\PaymentMethod;
+use Mondu\Mondu\Helpers\Request\UrlBuilder;
 use Mondu\Mondu\Model\Request\Transactions as OriginalTransactions;
 use Mondu\Mondu\Model\Ui\ConfigProvider;
 
@@ -27,24 +28,24 @@ class Transactions extends OriginalTransactions
         Curl $curl,
         CartTotalRepository $cartTotalRepository,
         CheckoutSession $checkoutSession,
-        ConfigProvider $configProvider,
+        UrlBuilder $monduUrlBuilder,
+        private readonly MonduFileLogger $monduFileLogger,
         private readonly OrderHelper $orderHelper,
+        private readonly Resolver $store,
         private readonly UrlInterface $urlBuilder,
         private readonly BuyerParamsInterface $buyerParams,
-        private readonly Resolver $store,
-        private readonly MonduFileLogger $monduFileLogger,
         private readonly HyvaCheckoutConfig $checkoutConfig,
     ) {
         parent::__construct(
             $curl,
             $cartTotalRepository,
             $checkoutSession,
-            $configProvider,
+            $monduUrlBuilder,
+            $monduFileLogger,
             $orderHelper,
+            $store,
             $urlBuilder,
             $buyerParams,
-            $store,
-            $monduFileLogger
         );
     }
 
@@ -99,7 +100,7 @@ class Transactions extends OriginalTransactions
         }
     }
 
-    protected function getRequestParams()
+    protected function getRequestParams(): array
     {
         $quote = $this->_checkoutSession->getQuote();
         $quote->collectTotals();
@@ -132,7 +133,7 @@ class Transactions extends OriginalTransactions
         return $this->orderHelper->addLinesOrGrossAmountToOrder($quote, $quoteTotals->getBaseGrandTotal(), $order);
     }
 
-    private function getBuyerParams(Quote $quote): array
+    private function getBuyerParams(CartInterface $quote): array
     {
         $params = [];
         if (($billing = $quote->getBillingAddress()) !== null) {
@@ -154,7 +155,7 @@ class Transactions extends OriginalTransactions
         return $params;
     }
 
-    private function getBillingAddressParams(Quote $quote): array
+    public function getBillingAddressParams(CartInterface $quote): array
     {
         return $this->extractAddressParams(
             $quote->getBillingAddress(),
@@ -162,7 +163,7 @@ class Transactions extends OriginalTransactions
         );
     }
 
-    private function getShippingAddressParams(Quote $quote): array
+    public function getShippingAddressParams(CartInterface $quote): array
     {
         return $this->extractAddressParams(
             $quote->getShippingAddress(),
@@ -170,7 +171,7 @@ class Transactions extends OriginalTransactions
         );
     }
 
-    private function extractAddressParams(?Address $address, array $attributeMapping): array
+    protected function extractAddressParamsWithMapping(?Address $address, array $attributeMapping): array
     {
         if (!$address || empty($attributeMapping)) {
             return [];
@@ -204,7 +205,7 @@ class Transactions extends OriginalTransactions
         return $params;
     }
 
-    private function resolveAddressValue(Address $address, string $key, array $street): mixed
+    protected function resolveAddressValue(Address $address, string $key, array $street): mixed
     {
         if (str_starts_with($key, 'street.')) {
             $index = (int) explode('.', $key)[1];
