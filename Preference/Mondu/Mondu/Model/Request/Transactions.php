@@ -16,8 +16,8 @@ use Mondu\Mondu\Helpers\BuyerParams\BuyerParamsInterface;
 use Mondu\Mondu\Helpers\Logger\Logger as MonduFileLogger;
 use Mondu\Mondu\Helpers\OrderHelper;
 use Mondu\Mondu\Helpers\PaymentMethod;
+use Mondu\Mondu\Helpers\Request\UrlBuilder;
 use Mondu\Mondu\Model\Request\Transactions as OriginalTransactions;
-use Mondu\Mondu\Model\Ui\ConfigProvider;
 
 class Transactions extends OriginalTransactions
 {
@@ -25,26 +25,26 @@ class Transactions extends OriginalTransactions
 
     public function __construct(
         Curl $curl,
-        CartTotalRepository $cartTotalRepository,
-        CheckoutSession $checkoutSession,
-        ConfigProvider $configProvider,
-        private readonly OrderHelper $orderHelper,
-        private readonly UrlInterface $urlBuilder,
         private readonly BuyerParamsInterface $buyerParams,
-        private readonly Resolver $store,
+        private readonly CartTotalRepository $cartTotalRepository,
+        private readonly CheckoutSession $checkoutSession,
+        private readonly UrlBuilder $monduUrlBuilder,
         private readonly MonduFileLogger $monduFileLogger,
-        private readonly HyvaCheckoutConfig $checkoutConfig,
+        private readonly OrderHelper $orderHelper,
+        private readonly Resolver $store,
+        private readonly UrlInterface $urlBuilder,
+        private readonly HyvaCheckoutConfig $checkoutConfig
     ) {
         parent::__construct(
             $curl,
+            $buyerParams,
             $cartTotalRepository,
             $checkoutSession,
-            $configProvider,
+            $monduUrlBuilder,
+            $monduFileLogger,
             $orderHelper,
-            $urlBuilder,
-            $buyerParams,
             $store,
-            $monduFileLogger
+            $urlBuilder
         );
     }
 
@@ -99,39 +99,6 @@ class Transactions extends OriginalTransactions
         }
     }
 
-    protected function getRequestParams()
-    {
-        $quote = $this->_checkoutSession->getQuote();
-        $quote->collectTotals();
-
-        $quoteTotals = $this->_cartTotalRepository->get($quote->getId());
-
-        $discountAmount = $quoteTotals->getDiscountAmount();
-
-        $successUrl = $this->urlBuilder->getUrl('mondu/payment_checkout/success');
-        $cancelUrl = $this->urlBuilder->getUrl('mondu/payment_checkout/cancel');
-        $declinedUrl = $this->urlBuilder->getUrl('mondu/payment_checkout/decline');
-
-        $locale = $this->store->getLocale();
-        $language = $locale ? strstr($locale, '_', true) : 'de';
-
-        $order = [
-            'language' => $language,
-            'currency' => $quote->getBaseCurrencyCode(),
-            'state_flow' => ConfigProvider::AUTHORIZATION_STATE_FLOW,
-            'success_url' => $successUrl,
-            'cancel_url' => $cancelUrl,
-            'declined_url' => $declinedUrl,
-            'total_discount_cents' => abs($discountAmount) * 100,
-            'buyer' => $this->getBuyerParams($quote),
-            'external_reference_id' => uniqid('M2_'),
-            'billing_address' => $this->getBillingAddressParams($quote),
-            'shipping_address' => $this->getShippingAddressParams($quote)
-        ];
-
-        return $this->orderHelper->addLinesOrGrossAmountToOrder($quote, $quoteTotals->getBaseGrandTotal(), $order);
-    }
-
     private function getBuyerParams(Quote $quote): array
     {
         $params = [];
@@ -151,56 +118,6 @@ class Transactions extends OriginalTransactions
 
             $params = $this->buyerParams->getBuyerParams($params, $quote);
         }
-        return $params;
-    }
-
-    private function getBillingAddressParams(Quote $quote): array
-    {
-        return $this->extractAddressParams(
-            $quote->getBillingAddress(),
-            $this->checkoutConfig->getBillingEavAttributeFormFieldsMapping()
-        );
-    }
-
-    private function getShippingAddressParams(Quote $quote): array
-    {
-        return $this->extractAddressParams(
-            $quote->getShippingAddress(),
-            $this->checkoutConfig->getShippingEavAttributeFormFieldsMapping()
-        );
-    }
-
-    private function extractAddressParams(?Address $address, array $attributeMapping): array
-    {
-        if (!$address || empty($attributeMapping)) {
-            return [];
-        }
-
-        $params = [];
-        $fieldMap = [
-            'country_id' => 'country_code',
-            'postcode'   => 'zip_code',
-            'region'     => 'state',
-            'street.0'   => 'address_line1',
-            'street.1'   => 'address_line2',
-            'street.3'   => 'address_line3',
-            'street.4'   => 'address_line4',
-        ];
-
-        $street = (array) $address->getStreet();
-        foreach (array_keys($attributeMapping) as $key) {
-            $value = $this->resolveAddressValue($address, $key, $street);
-            if ($value === null || $value === '') {
-                continue;
-            }
-
-            $params[$fieldMap[$key] ?? $key] = $value;
-        }
-
-        if (!empty($params['address_line1']) && $address->getStreetNumber()) {
-            $params['address_line1'] .= ', ' . $address->getStreetNumber();
-        }
-
         return $params;
     }
 
