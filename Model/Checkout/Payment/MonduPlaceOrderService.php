@@ -114,7 +114,7 @@ class MonduPlaceOrderService extends AbstractPlaceOrderService implements PlaceO
     {
         $component->getEvaluationResultBatch()->push(
             $component->getEvaluationResultBatch()->getFactory()->createErrorMessage(
-                __('Order placement failed: %1', $exception->getMessage())
+                'Order placement failed: ' . $exception->getMessage()
             )
         );
         $component->dispatchBrowserEvent('process-stop');
