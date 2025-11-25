@@ -2,7 +2,7 @@
     "name": "mondu/magento2-hyva-payment",
     "description": "Adds Mondu payment support for Hyvä Checkout in Magento 2",
     "type": "magento2-module",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "license": "MIT",
     "require": {
         "php": ">=8.2",
