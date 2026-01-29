@@ -12,8 +12,6 @@
                       xsi:type="object">Mondu\MonduPaymentHyva\Model\Checkout\Payment\MonduPlaceOrderService</item>
                 <item name="monduinstallmentbyinvoice"
                       xsi:type="object">Mondu\MonduPaymentHyva\Model\Checkout\Payment\MonduPlaceOrderService</item>
-                <item name="mondupaynow"
-                      xsi:type="object">Mondu\MonduPaymentHyva\Model\Checkout\Payment\MonduPlaceOrderService</item>
             </argument>
         </arguments>
     </type>

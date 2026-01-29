@@ -44,7 +44,6 @@ class CustomerDataProvider
             'mondusepa' => PaymentMethod::DIRECT_DEBIT,
             'monduinstallment' => PaymentMethod::INSTALLMENT,
             'monduinstallmentbyinvoice' => PaymentMethod::INSTALLMENT_BY_INVOICE,
-            'mondupaynow' => PaymentMethod::PAY_NOW,
             default => 'invoice',
         };
     }
