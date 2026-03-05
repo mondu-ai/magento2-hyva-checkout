@@ -49,6 +49,7 @@ class MonduPlaceOrderService extends AbstractPlaceOrderService implements PlaceO
                 'email' => $this->customerDataProvider->getEmail($quote),
                 'user-agent' => $this->customerDataProvider->getUserAgent(),
                 'payment_method' => $this->customerDataProvider->getPaymentMethod($quote),
+                'store_id' => (int) $quote->getStoreId(),
             ]);
 
             if (empty($response['token']) || !empty($response['error'])) {
