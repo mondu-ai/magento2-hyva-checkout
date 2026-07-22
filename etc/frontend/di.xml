@@ -17,4 +17,11 @@
             </argument>
         </arguments>
     </type>
+    <type name="Hyva\Theme\ViewModel\SvgIcons">
+        <arguments>
+            <argument name="pathPrefixMapping" xsi:type="array">
+                <item name="mondu" xsi:type="string">Mondu_MonduPaymentHyva::images</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

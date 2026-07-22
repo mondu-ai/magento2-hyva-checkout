@@ -2,14 +2,82 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
-        <referenceBlock name="checkout.payment.methods"
-                        template="Mondu_MonduPaymentHyva::checkout/payment/method-list.phtml">
-            <arguments>
-                <argument name="magewire"
-                          xsi:type="object">Hyva\Checkout\Magewire\Checkout\Payment\MethodList</argument>
-                <argument name="payment_content_view_model"
-                          xsi:type="object">Mondu\MonduPaymentHyva\ViewModel\PaymentContent</argument>
-            </arguments>
+        <referenceBlock name="checkout.payment.methods">
+            <block name="checkout.payment.method.mondu"
+                   as="mondu"
+                   template="Mondu_MonduPaymentHyva::checkout/payment/method/mondu-description.phtml">
+                <arguments>
+                    <argument name="metadata" xsi:type="array">
+                        <item name="icon" xsi:type="array">
+                            <item name="svg" xsi:type="string">mondu/mondu</item>
+                            <item name="attributes" xsi:type="array">
+                                <item name="width" xsi:type="string">72</item>
+                                <item name="height" xsi:type="string">18</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+            <block name="checkout.payment.method.mondusepa"
+                   as="mondusepa"
+                   template="Mondu_MonduPaymentHyva::checkout/payment/method/mondu-description.phtml">
+                <arguments>
+                    <argument name="metadata" xsi:type="array">
+                        <item name="icon" xsi:type="array">
+                            <item name="svg" xsi:type="string">mondu/mondu</item>
+                            <item name="attributes" xsi:type="array">
+                                <item name="width" xsi:type="string">72</item>
+                                <item name="height" xsi:type="string">18</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+            <block name="checkout.payment.method.monduinstallment"
+                   as="monduinstallment"
+                   template="Mondu_MonduPaymentHyva::checkout/payment/method/mondu-description.phtml">
+                <arguments>
+                    <argument name="metadata" xsi:type="array">
+                        <item name="icon" xsi:type="array">
+                            <item name="svg" xsi:type="string">mondu/mondu</item>
+                            <item name="attributes" xsi:type="array">
+                                <item name="width" xsi:type="string">72</item>
+                                <item name="height" xsi:type="string">18</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+            <block name="checkout.payment.method.monduinstallmentbyinvoice"
+                   as="monduinstallmentbyinvoice"
+                   template="Mondu_MonduPaymentHyva::checkout/payment/method/mondu-description.phtml">
+                <arguments>
+                    <argument name="metadata" xsi:type="array">
+                        <item name="icon" xsi:type="array">
+                            <item name="svg" xsi:type="string">mondu/mondu</item>
+                            <item name="attributes" xsi:type="array">
+                                <item name="width" xsi:type="string">72</item>
+                                <item name="height" xsi:type="string">18</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
+            <block name="checkout.payment.method.mondupaynow"
+                   as="mondupaynow"
+                   template="Mondu_MonduPaymentHyva::checkout/payment/method/mondu-description.phtml">
+                <arguments>
+                    <argument name="metadata" xsi:type="array">
+                        <item name="icon" xsi:type="array">
+                            <item name="svg" xsi:type="string">mondu/mondu</item>
+                            <item name="attributes" xsi:type="array">
+                                <item name="width" xsi:type="string">72</item>
+                                <item name="height" xsi:type="string">18</item>
+                            </item>
+                        </item>
+                    </argument>
+                </arguments>
+            </block>
         </referenceBlock>
     </body>
 </page>
