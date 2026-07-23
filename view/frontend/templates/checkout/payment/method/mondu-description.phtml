@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Magento\Framework\View\Element\Template;
+use Magento\Quote\Api\Data\PaymentMethodInterface;
+use Mondu\MonduPaymentHyva\ViewModel\PaymentContent as PaymentContentViewModel;
+
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var PaymentMethodInterface|null $method */
+$method = $block->getData('method');
+
+if (! $method) {
+    return;
+}
+
+/** @var PaymentContentViewModel $paymentContent */
+$paymentContent = $viewModels->require(PaymentContentViewModel::class);
+?>
+<div class="mondu-payment-description text-gray-700">
+    <?= /* @noEscape */ $paymentContent->getDescription($method->getCode()) ?>
+</div>
