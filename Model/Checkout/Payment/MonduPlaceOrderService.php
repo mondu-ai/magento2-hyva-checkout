@@ -66,7 +66,7 @@ class MonduPlaceOrderService extends AbstractPlaceOrderService implements PlaceO
     }
 
     /**
-     * Evaluates Mondu response and returns redirect or widget instructions.
+     * Evaluates Mondu response and redirects to the hosted checkout.
      *
      * @param EvaluationResultFactory $resultFactory
      * @param int|null $orderId
@@ -79,14 +79,8 @@ class MonduPlaceOrderService extends AbstractPlaceOrderService implements PlaceO
         $response = $this->sessionStorage->getResponse();
         $this->sessionStorage->clearResponse();
 
-        if ($response && $response['source'] === 'hosted' && !empty($response['hosted_checkout_url'])) {
+        if (!empty($response['hosted_checkout_url'])) {
             return $resultFactory->createRedirect($response['hosted_checkout_url']);
-        }
-
-        if ($response && $response['source'] === 'widget') {
-            $validation = $resultFactory->createValidation('mondu-widget');
-            $validation->withDetails(['token' => $response['token']]);
-            return $validation;
         }
 
         return $resultFactory->createErrorMessage(
