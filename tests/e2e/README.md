@@ -19,6 +19,9 @@ Playwright end-to-end check of the Mondu payment flow in Hyvä Checkout.
 
 ## Run
 
+`E2E_BASE_URL`, `E2E_EMAIL` and `E2E_PASSWORD` are required; the run stops at once
+when one is missing. `E2E_PRODUCT_URL` defaults to `/joust-duffle-bag.html`.
+
 ```bash
 npm install
 E2E_BASE_URL=https://your-shop.example \

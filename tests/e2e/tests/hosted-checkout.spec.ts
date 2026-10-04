@@ -6,8 +6,9 @@ import { test, expect, Page } from '@playwright/test';
  * to the Magento success page.
  */
 
-const EMAIL = process.env.E2E_EMAIL ?? 'mondu-e2e@example.com';
-const PASSWORD = process.env.E2E_PASSWORD ?? 'Mondu-E2E-1234';
+// Required, checked in playwright.config.ts.
+const EMAIL = process.env.E2E_EMAIL as string;
+const PASSWORD = process.env.E2E_PASSWORD as string;
 const PRODUCT_URL = process.env.E2E_PRODUCT_URL ?? '/joust-duffle-bag.html';
 
 async function settle(page: Page) {
