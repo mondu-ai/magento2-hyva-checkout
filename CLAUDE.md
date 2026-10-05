@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Magento 2 module (`Mondu_MonduPaymentHyva`) that adds Hyva Checkout compatibility for the Mondu payment module (`Mondu_Mondu`). It bridges Mondu's B2B payment methods (invoice, SEPA, installment, installment by invoice, pay now) with Hyva's Magewire-based checkout.
 
-**Package:** `mondu/magento2-hyva-payment` (v1.0.4)
+**Package:** `mondu/magento2-hyva-payment` (v1.0.8)
 **Namespace:** `Mondu\MonduPaymentHyva`
 **Dependencies:** PHP >=8.2, Magento CE 2.4.7+, `mondu/magento2-payment` >=2.5.0, `hyva-themes/magento2-hyva-checkout` ^1.3
 
@@ -20,24 +20,21 @@ php bin/magento setup:static-content:deploy
 php bin/magento cache:flush
 ```
 
-No test suite, linter, or build pipeline exists in this module.
+No unit tests, linter, or build pipeline exist in this module. A Playwright E2E check of the hosted checkout flow lives in `tests/e2e/` (see its README).
 
 ## Architecture
 
 ### Payment Flow
 
 1. Customer selects a Mondu method in Hyva Checkout UI
-2. Mondu SDK loads dynamically via `mondu.phtml` (listens to `checkout:payment:method-activate` browser event)
-3. `MonduPlaceOrderService::placeOrder()` creates a Mondu transaction via `TransactionService`
-4. Plugin intercepts address data, remapping Hyva EAV form fields to Mondu's address format
-5. Response stored in session (`SessionStorage`)
-6. `evaluateCompletion()` routes to either hosted checkout redirect or widget-based token validation
+2. `MonduPlaceOrderService::placeOrder()` creates a Mondu transaction via `TransactionService`
+3. Plugin intercepts address data, remapping Hyva EAV form fields to Mondu's address format
+4. Response stored in session (`SessionStorage`)
+5. `evaluateCompletion()` redirects to `hosted_checkout_url`; if the response has none, it returns an error message
 
 ### Key Components
 
-- **`Magewire/Checkout/Payment/Mondu.php`** — Magewire component that injects the SDK URL from `ConfigProvider`. Loaded in the checkout layout container `hyva.checkout.api-v1.after`.
-
-- **`Model/Checkout/Payment/MonduPlaceOrderService.php`** — Core service implementing `PlaceOrderServiceInterface`. Handles transaction creation, completion evaluation (hosted redirect vs. widget), and error handling with Magewire browser events (`process-stop`).
+- **`Model/Checkout/Payment/MonduPlaceOrderService.php`** — Core service implementing `PlaceOrderServiceInterface`. Handles transaction creation, completion evaluation (hosted checkout redirect), and error handling with Magewire browser events (`process-stop`).
 
 - **`Plugin/Mondu/Mondu/Model/Request/Transactions.php`** — After-plugins on `afterGetBillingAddressParams` / `afterGetShippingAddressParams`. Translates Hyva EAV attribute mappings to Mondu's address field names (`country_id` → `country_code`, `postcode` → `zip_code`, etc.). Appends `street_number` to `address_line1` when present.
 
@@ -54,10 +51,10 @@ No test suite, linter, or build pipeline exists in this module.
 
 ### Frontend
 
-Templates use Magewire reactive bindings (`wire:model`) and Tailwind CSS. Mondu methods are identified by `str_starts_with($methodCode, 'mondu')`. The SDK script tag is injected once (deduped by `id="mondu_sdk_min"`) and registered with Magento's CSP.
+Templates use Magewire reactive bindings (`wire:model`) and Tailwind CSS. Mondu methods are identified by `str_starts_with($methodCode, 'mondu')`. No Mondu JavaScript is loaded on the storefront: the buyer completes payment on the Mondu hosted checkout page.
 
 ## Conventions
 
 - All PHP classes use `declare(strict_types=1)` and constructor property promotion
-- No custom routes, events, or observers — integration is via DI plugins and Magewire components
+- No custom routes, events, or observers — integration is via DI plugins and the place order service
 - Address field mapping lives in the Transactions plugin, not in the place order service
