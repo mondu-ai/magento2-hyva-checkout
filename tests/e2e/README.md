@@ -7,6 +7,10 @@ Playwright end-to-end check of the Mondu payment flow in Hyvä Checkout.
 1. The payment step loads no Mondu widget SDK (`widget.js`, `#mondu_sdk_min`, `window.monduCheckout`).
 2. Placing a Mondu invoice order redirects to the Mondu hosted checkout.
 3. Confirming on the hosted checkout returns the buyer to the Magento success page.
+4. Invoice offers the enabled net terms as a select (30 days preselected when offered); the
+   picked term is kept on the quote across a reload and shown on the Mondu hosted checkout.
+5. Direct debit with a single enabled term states it as text; instalments carry no term.
+6. No Mondu method shows the old privacy notice.
 
 ## Preconditions on the target Magento
 
@@ -16,6 +20,9 @@ Playwright end-to-end check of the Mondu payment flow in Hyvä Checkout.
 - Mondu core (`Mondu_Mondu`) configured in sandbox with the 5 methods enabled.
 - A customer with a **German default address** exists (Mondu methods target DE/AT).
 - The product at `E2E_PRODUCT_URL` is a simple, in-stock product.
+- For `net-term.spec.ts`: at least two net terms enabled for invoice and exactly one for
+  direct debit (Stores > Configuration > Payment Methods > Mondu > Net terms offered to
+  buyers), all held by the Mondu account for the buyer's country.
 
 ## Run
 

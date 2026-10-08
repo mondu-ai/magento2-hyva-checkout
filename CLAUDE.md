@@ -6,9 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Magento 2 module (`Mondu_MonduPaymentHyva`) that adds Hyva Checkout compatibility for the Mondu payment module (`Mondu_Mondu`). It bridges Mondu's B2B payment methods (invoice, SEPA, installment, installment by invoice, pay now) with Hyva's Magewire-based checkout.
 
-**Package:** `mondu/magento2-hyva-payment` (v1.0.8)
+**Package:** `mondu/magento2-hyva-payment` (v1.1.0)
 **Namespace:** `Mondu\MonduPaymentHyva`
-**Dependencies:** PHP >=8.2, Magento CE 2.4.7+, `mondu/magento2-payment` >=2.5.0, `hyva-themes/magento2-hyva-checkout` ^1.3
+**Dependencies:** PHP >=8.2, Magento CE 2.4.7+, `mondu/magento2-payment` >=2.9.4 (the release with the net term selection, PT-3964), `hyva-themes/magento2-hyva-checkout` ^1.3
 
 ## Common Commands
 
@@ -42,7 +42,9 @@ No unit tests, linter, or build pipeline exist in this module. A Playwright E2E 
 
 - **`Model/Checkout/Payment/SessionStorage.php`** — Session wrapper storing Mondu API responses under key `mondu_response`.
 
-- **`ViewModel/PaymentContent.php`** — Provides payment method descriptions from store config with appended privacy policy link.
+- **`ViewModel/PaymentContent.php`** — Provides the payment method description from store config (no privacy notice; it was dropped from the Mondu module as well).
+
+- **`Magewire/Checkout/Payment/NetTerm.php`** — Magewire component of the invoice, direct debit and pay now method blocks. Offers the net terms the Mondu module's `NetTermConfigProvider` allows for the method and the buyer's country (a select, or plain text for a single term), preselects via `PaymentTerms::pickDefault()`, and stores the choice on the quote payment as `mondu_net_term`, the field the Mondu module sends as `net_term`. Re-reads the terms on the address events.
 
 ### DI Configuration
 
@@ -56,5 +58,5 @@ Templates use Magewire reactive bindings (`wire:model`) and Tailwind CSS. Mondu 
 ## Conventions
 
 - All PHP classes use `declare(strict_types=1)` and constructor property promotion
-- No custom routes, events, or observers — integration is via DI plugins and the place order service
+- No custom routes, events, or observers: integration is via DI plugins, the place order service and the net term Magewire component
 - Address field mapping lives in the Transactions plugin, not in the place order service
