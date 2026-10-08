@@ -19,7 +19,12 @@ if (! $method) {
 
 /** @var PaymentContentViewModel $paymentContent */
 $paymentContent = $viewModels->require(PaymentContentViewModel::class);
+$description = $paymentContent->getDescription($method->getCode());
+
+if ($description === '') {
+    return;
+}
 ?>
 <div class="mondu-payment-description text-gray-700">
-    <?= /* @noEscape */ $paymentContent->getDescription($method->getCode()) ?>
+    <?= /* @noEscape */ $description ?>
 </div>
