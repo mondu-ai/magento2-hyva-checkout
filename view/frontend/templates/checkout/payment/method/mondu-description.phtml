@@ -3,12 +3,15 @@
 declare(strict_types=1);
 
 use Hyva\Theme\Model\ViewModelRegistry;
+use Magento\Framework\Escaper;
 use Magento\Framework\View\Element\Template;
 use Magento\Quote\Api\Data\PaymentMethodInterface;
+use Mondu\MonduPaymentHyva\Magewire\Checkout\Payment\NetTerm;
 use Mondu\MonduPaymentHyva\ViewModel\PaymentContent as PaymentContentViewModel;
 
 /** @var Template $block */
 /** @var ViewModelRegistry $viewModels */
+/** @var Escaper $escaper */
 
 /** @var PaymentMethodInterface|null $method */
 $method = $block->getData('method');
@@ -19,7 +22,39 @@ if (! $method) {
 
 /** @var PaymentContentViewModel $paymentContent */
 $paymentContent = $viewModels->require(PaymentContentViewModel::class);
+$description = $paymentContent->getDescription($method->getCode());
+
+// Only the methods settled on a term are wired to the net term component, see the layout.
+/** @var NetTerm|null $netTermComponent */
+$netTermComponent = isset($magewire) && $magewire instanceof NetTerm ? $magewire : null;
 ?>
-<div class="mondu-payment-description text-gray-700">
-    <?= /* @noEscape */ $paymentContent->getDescription($method->getCode()) ?>
+<div class="mondu-payment-content space-y-4">
+    <?php if ($description !== ''): ?>
+        <div class="mondu-payment-description text-gray-700">
+            <?= /* @noEscape */ $description ?>
+        </div>
+    <?php endif ?>
+
+    <?php if ($netTermComponent && $netTermComponent->netTerms): ?>
+        <div class="mondu-net-term">
+            <?php if (count($netTermComponent->netTerms) > 1): ?>
+                <label class="block font-medium text-gray-700">
+                    <?= $escaper->escapeHtml(__('Payment term')) ?>
+                    <select class="form-select block w-full mt-1" wire:model="netTerm">
+                        <?php foreach ($netTermComponent->netTerms as $netTerm): ?>
+                            <option value="<?= (int) $netTerm ?>">
+                                <?= $escaper->escapeHtml(__('%1 days', $netTerm)) ?>
+                            </option>
+                        <?php endforeach ?>
+                    </select>
+                </label>
+            <?php else: ?>
+                <?php // One term is not a question, but the buyer is still told when the invoice falls due. ?>
+                <p class="mondu-net-term-single text-gray-700">
+                    <span class="font-medium"><?= $escaper->escapeHtml(__('Payment term')) ?>:</span>
+                    <?= $escaper->escapeHtml(__('%1 days', $netTermComponent->netTerms[0])) ?>
+                </p>
+            <?php endif ?>
+        </div>
+    <?php endif ?>
 </div>
