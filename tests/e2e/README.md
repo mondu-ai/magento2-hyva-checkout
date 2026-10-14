@@ -9,6 +9,8 @@ Playwright end-to-end check of the Mondu payment flow in Hyvä Checkout.
 3. Confirming on the hosted checkout returns the buyer to the Magento success page.
 4. Invoice offers the enabled net terms as a select (30 days preselected when offered); the
    picked term is kept on the quote across a reload and shown on the Mondu hosted checkout.
+   That last check reads the hosted checkout page text, not the order payload sent to Mondu,
+   and pay now has no case of its own.
 5. Direct debit with a single enabled term states it as text; instalments carry no term.
 6. No Mondu method shows the old privacy notice.
 

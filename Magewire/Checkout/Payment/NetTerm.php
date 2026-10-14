@@ -7,8 +7,9 @@ namespace Mondu\MonduPaymentHyva\Magewire\Checkout\Payment;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Api\Data\CartInterface;
+use Magento\Quote\Api\Data\PaymentMethodInterface;
+use Magento\Quote\Model\ResourceModel\Quote\Payment as QuotePaymentResource;
 use Magewirephp\Magewire\Component;
 use Mondu\Mondu\Helpers\PaymentTerms;
 use Mondu\Mondu\Model\Payment\AsyncOrderFields;
@@ -61,13 +62,13 @@ class NetTerm extends Component
 
     /**
      * @param CheckoutSession $checkoutSession
-     * @param CartRepositoryInterface $quoteRepository
+     * @param QuotePaymentResource $quotePaymentResource
      * @param NetTermConfigProvider $netTermConfigProvider
      * @param PaymentTerms $paymentTerms
      */
     public function __construct(
         private readonly CheckoutSession $checkoutSession,
-        private readonly CartRepositoryInterface $quoteRepository,
+        private readonly QuotePaymentResource $quotePaymentResource,
         private readonly NetTermConfigProvider $netTermConfigProvider,
         private readonly PaymentTerms $paymentTerms,
     ) {
@@ -76,13 +77,20 @@ class NetTerm extends Component
     /**
      * Loads the terms on first render.
      *
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
+     * A failure leaves the method without a term field and shows the message, rather
+     * than breaking the whole payment method block.
+     *
      * @return void
      */
     public function mount(): void
     {
-        $this->loadNetTerms();
+        try {
+            $this->loadNetTerms();
+        } catch (LocalizedException $exception) {
+            $this->netTerms = [];
+            $this->netTerm = null;
+            $this->dispatchErrorMessage($exception->getMessage());
+        }
     }
 
     /**
@@ -140,14 +148,14 @@ class NetTerm extends Component
     }
 
     /**
-     * Terms on offer for the quote's Mondu method and the buyer's country.
+     * Terms on offer for this component's Mondu method and the buyer's country.
      *
      * @param CartInterface $quote
      * @return int[]
      */
     private function getNetTermsFor(CartInterface $quote): array
     {
-        $method = (string) $quote->getPayment()->getMethod();
+        $method = $this->getMethodCode($quote);
         $config = $this->netTermConfigProvider->getConfig();
         $byCountry = $config['monduNetTerms']['byMethod'][$method] ?? [];
         if ($byCountry === []) {
@@ -158,6 +166,27 @@ class NetTerm extends Component
             ?: $quote->getShippingAddress()->getCountryId();
 
         return $byCountry[$countryId] ?? $byCountry[NetTermConfigProvider::ANY_COUNTRY] ?? [];
+    }
+
+    /**
+     * Code of the Mondu method this component belongs to.
+     *
+     * Each method block carries its own instance, and Hyvä's method list hands the
+     * block its method when it renders it. The quote's method is only the fallback for
+     * a request where the block was built without one: it can still be the previously
+     * selected method while the method list saves the new one.
+     *
+     * @param CartInterface $quote
+     * @return string
+     */
+    private function getMethodCode(CartInterface $quote): string
+    {
+        $method = $this->getParent()?->getData('method');
+        if ($method instanceof PaymentMethodInterface && $method->getCode()) {
+            return (string) $method->getCode();
+        }
+
+        return (string) $quote->getPayment()->getMethod();
     }
 
     /**
@@ -181,6 +210,8 @@ class NetTerm extends Component
             $payment->setAdditionalInformation(AsyncOrderFields::FIELD_NET_TERM, $netTerm);
         }
 
-        $this->quoteRepository->save($quote);
+        // Only the payment row: saving the whole quote here, on a render path, could race
+        // with Hyvä's own Magewire saves of the same quote.
+        $this->quotePaymentResource->save($payment);
     }
 }

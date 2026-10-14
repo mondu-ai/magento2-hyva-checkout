@@ -8,7 +8,7 @@ Magento 2 module (`Mondu_MonduPaymentHyva`) that adds Hyva Checkout compatibilit
 
 **Package:** `mondu/magento2-hyva-payment` (v1.1.0)
 **Namespace:** `Mondu\MonduPaymentHyva`
-**Dependencies:** PHP >=8.2, Magento CE 2.4.7+, `mondu/magento2-payment` >=2.9.4 (the release with the net term selection, PT-3964), `hyva-themes/magento2-hyva-checkout` ^1.3
+**Dependencies:** PHP >=8.2, Magento CE 2.4.7+, `mondu/magento2-payment` ^2.9.4 (the release with the net term selection, PT-3964), `hyva-themes/magento2-hyva-checkout` ^1.3
 
 ## Common Commands
 

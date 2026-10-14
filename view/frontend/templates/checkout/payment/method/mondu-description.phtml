@@ -42,7 +42,7 @@ $netTermComponent = isset($magewire) && $magewire instanceof NetTerm ? $magewire
                     <?= $escaper->escapeHtml(__('Payment term')) ?>
                     <select class="form-select block w-full mt-1" wire:model="netTerm">
                         <?php foreach ($netTermComponent->netTerms as $netTerm): ?>
-                            <option value="<?= (int) $netTerm ?>">
+                            <option value="<?= (int) $netTerm ?>"<?= (int) $netTerm === $netTermComponent->netTerm ? ' selected' : '' ?>>
                                 <?= $escaper->escapeHtml(__('%1 days', $netTerm)) ?>
                             </option>
                         <?php endforeach ?>
