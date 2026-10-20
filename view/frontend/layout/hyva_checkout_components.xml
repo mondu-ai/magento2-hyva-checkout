@@ -3,10 +3,14 @@
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <referenceBlock name="checkout.payment.methods">
+            <!-- Invoice, direct debit and pay now are settled on a net term the buyer chooses. -->
             <block name="checkout.payment.method.mondu"
                    as="mondu"
                    template="Mondu_MonduPaymentHyva::checkout/payment/method/mondu-description.phtml">
                 <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        Mondu\MonduPaymentHyva\Magewire\Checkout\Payment\NetTerm
+                    </argument>
                     <argument name="metadata" xsi:type="array">
                         <item name="icon" xsi:type="array">
                             <item name="svg" xsi:type="string">mondu/mondu</item>
@@ -22,6 +26,9 @@
                    as="mondusepa"
                    template="Mondu_MonduPaymentHyva::checkout/payment/method/mondu-description.phtml">
                 <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        Mondu\MonduPaymentHyva\Magewire\Checkout\Payment\NetTerm
+                    </argument>
                     <argument name="metadata" xsi:type="array">
                         <item name="icon" xsi:type="array">
                             <item name="svg" xsi:type="string">mondu/mondu</item>
@@ -67,6 +74,9 @@
                    as="mondupaynow"
                    template="Mondu_MonduPaymentHyva::checkout/payment/method/mondu-description.phtml">
                 <arguments>
+                    <argument name="magewire" xsi:type="object">
+                        Mondu\MonduPaymentHyva\Magewire\Checkout\Payment\NetTerm
+                    </argument>
                     <argument name="metadata" xsi:type="array">
                         <item name="icon" xsi:type="array">
                             <item name="svg" xsi:type="string">mondu/mondu</item>
